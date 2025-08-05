@@ -1,0 +1,1 @@
+This is the simplest example of a server that should process a lot of requests with aggregation in batches. Do not take it seriously. It may be improved, but this is not exactly :)
