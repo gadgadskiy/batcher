@@ -13,13 +13,13 @@ public class BatchRequest {
     private Integer batchId;
     CompletableFuture<Integer> future;
 
-    @SneakyThrows
     public void execute() {
         fakeRequestProcessing();
         future.complete(batchId);
     }
 
-    private void fakeRequestProcessing() throws InterruptedException {
+    @SneakyThrows
+    private void fakeRequestProcessing() {
         batchId *= 100;
         Thread.sleep(new Random().nextInt(1, 5));
     }
