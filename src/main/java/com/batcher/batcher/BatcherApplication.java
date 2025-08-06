@@ -1,8 +1,8 @@
 package com.batcher.batcher;
 
 import lombok.SneakyThrows;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import static com.batcher.batcher.RequestEmulator.EMULATED_REQUESTS_COUNT;
 
 public class BatcherApplication {
 
@@ -23,12 +23,12 @@ public class BatcherApplication {
     private Runnable logger() {
         return () -> {
             while (true) {
-                var size = requestProcessor.getProcessed().size();
-                if (size >= 10000) {
+                var size = requestEmulator.getProcessedCount();
+                System.out.println("Processed: " + size);
+                if (size >= EMULATED_REQUESTS_COUNT) {
                     System.out.println("Everything completed");
                     System.exit(0);
                 }
-                System.out.println("Processed: " + size);
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {

@@ -1,11 +1,8 @@
 package com.batcher.batcher;
 
-import lombok.Getter;
-
 import java.util.ArrayList;
-import java.util.Set;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
@@ -17,11 +14,11 @@ public class RequestProcessor {
 
     private final BlockingQueue<BatchRequest> requestQueue = new LinkedBlockingQueue<>();
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    @Getter
-    private final Set<Integer> processed = ConcurrentHashMap.newKeySet();
 
-    public void addRequest(BatchRequest request) {
-        requestQueue.add(request);
+    public CompletableFuture<Integer> addRequest(BatchRequest request) {
+        var future = new CompletableFuture<Integer>();
+        requestQueue.add(request.toBuilder().future(future).build());
+        return future;
     }
 
     public void init() {
@@ -32,8 +29,10 @@ public class RequestProcessor {
         try {
             var batch = new ArrayList<BatchRequest>(BATCH_SIZE);
             requestQueue.drainTo(batch, BATCH_SIZE);
-            System.out.printf("Process %s items, %s remained in the queue%n", batch.size(), requestQueue.size());
-            batch.forEach(item -> processed.add(item.getBatchId()));
+            if (!batch.isEmpty()) {
+                System.out.printf("Process %s items, %s remained in the queue%n", batch.size(), requestQueue.size());
+                batch.forEach(BatchRequest::execute);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
